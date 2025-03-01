@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useState } from "react";
+import { useStockData } from "@/components/StockTickerDataProvider";
 import {
   Box,
   Card,
@@ -10,46 +10,8 @@ import {
 } from "@mui/material";
 import Image from "next/image";
 
-type Stock = {
-  symbol: string;
-  price: number;
-  percentageChange: number;
-  isUp: boolean;
-};
-
 export default function StockTicker() {
-  const [stocks, setStocks] = useState<Stock[]>([]);
-  const [selectedStock, setSelectedStock] = useState<Stock | null>(null);
-
-  const ev_src = process.env.SSE_CONNECTION ?? "";
-
-  useEffect(() => {
-    const eventSource = new EventSource(ev_src);
-
-    eventSource.onmessage = (event) => {
-      const data = JSON.parse(event.data);
-
-      if (Array.isArray(data)) {
-        setStocks(data); // Initial data
-      } else {
-        setStocks((prev) =>
-          prev.map((s) => (s.symbol === data.symbol ? data : s))
-        );
-
-        // ✅ Ensure selected stock updates when new data arrives
-        setSelectedStock((prevSelected) =>
-          prevSelected?.symbol === data.symbol ? data : prevSelected
-        );
-      }
-    };
-
-    eventSource.onerror = (error) => {
-      console.error("SSE Error:", error);
-      eventSource.close();
-    };
-
-    return () => eventSource.close();
-  }, []);
+  const { stocks, selectedStock, setSelectedStock } = useStockData();
 
   return (
     <Paper
@@ -65,11 +27,6 @@ export default function StockTicker() {
         alignItems: "center",
       }}
     >
-      <Typography variant="h4" gutterBottom>
-        Live Stock Prices
-      </Typography>
-
-      {/* Selected Stock */}
       {selectedStock && (
         <Card
           sx={{
@@ -91,13 +48,12 @@ export default function StockTicker() {
               variant="body1"
               color={selectedStock.isUp ? "green" : "red"}
             >
-              ({Number(selectedStock.percentageChange).toFixed(2)}%)
+              ({parseFloat(selectedStock.percentageChange).toFixed(2)}%)
             </Typography>
           </CardContent>
         </Card>
       )}
 
-      {/* Stock List */}
       <MuiGrid
         container
         spacing={2}
@@ -136,10 +92,10 @@ export default function StockTicker() {
                   {symbol}
                 </Typography>
                 <Typography variant="body2" color={isUp ? "green" : "red"}>
-                  ${Number(price).toFixed(2)} {isUp ? "↑" : "↓"}
+                  ${parseFloat(price).toFixed(2)} {isUp ? "↑" : "↓"}
                 </Typography>
                 <Typography variant="caption" color={isUp ? "green" : "red"}>
-                  ({Number(percentageChange).toFixed(2)}%)
+                  ({parseFloat(percentageChange).toFixed(2)}%)
                 </Typography>
               </CardContent>
             </Card>

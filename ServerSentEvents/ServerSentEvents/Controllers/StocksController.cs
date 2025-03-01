@@ -33,7 +33,7 @@ public class StocksController : ControllerBase
             initialData.Add(new
             {
                 symbol = stock,
-                price = BasePrices[stock].ToString("0.00"),
+                price = BasePrices[stock],
                 percentageChange = 0.0,  // Initially 0%
                 isUp = true
             });
@@ -53,8 +53,8 @@ public class StocksController : ControllerBase
             var stockUpdate = new
             {
                 symbol = stock,
-                price = newPrice.ToString("0.00"),
-                percentageChange = ((newPrice - BasePrices[stock]) / BasePrices[stock] * 100).ToString("n2"),
+                price = newPrice,
+                percentageChange = ((newPrice - BasePrices[stock]) / BasePrices[stock] * 100),
                 isUp = isUp
             };
 
